@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presentes - Casamento</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2C6B3F; /* Verde escuro */
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .present-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .present {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #3E8E41; /* Verde mais claro */
+            border: 2px solid #2A4D2F; /* Tom mais escuro */
+            border-radius: 8px;
+            padding: 10px;
+            width: 150px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .present img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .present:hover {
+            background-color: #2A4D2F;
+            transform: scale(1.05);
+        }
+
+        .chosen {
+            background-color: #98e098; /* Cor verde claro para marcados */
+            border-color: #66c766;
+            pointer-events: none;
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-box {
+            background: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .popup button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .popup button:hover {
+            background-color: #218838;
+        }
+
+        .popup button.cancel {
+            background-color: #dc3545;
+        }
+
+        .popup button.cancel:hover {
+            background-color: #c82333;
+        }
+
+        #nome-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button#submit-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button#submit-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Presentes - Casamento</h1>
+    <p>Escolha o presente que deseja dar aos noivos. Por favor, insira seu nome após a escolha.</p>
+
+    <div class="present-container" id="present-container"></div>
+
+    <div class="popup" id="popup">
+        <div class="popup-box">
+            <p>Você realmente deseja escolher este presente?</p>
+            <button id="confirm-btn">Sim</button>
+            <button class="cancel" id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="nome-section">
+        <input type="text" id="nome-input" placeholder="Digite seu nome" />
+        <button id="submit-btn" onclick="submitName()">Confirmar Escolha</button>
+    </div>
+
+    <script>
+        let chosenPresents = [];
+        let selectedPresent = null;
+
+        function generatePresents() {
+            const container = document.getElementById("present-container");
+            const presentes = [
+                { nome: "Geladeira", imagem: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRCFELC6hIq5961VM2CavoPzug_7Pb_Alqkp2Xkkr10yT31WDyyynhJllmjhywa6bHAR3_WcormH-wjgUaQY5RZV3w-zyhutBZ5ms-uGQ-QoLK9U2Xhsx_2piv7PwYDNsGBp4rsw5P5&usqp=CAc" },
+                { nome: "Fogão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Televisão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Micro-ondas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Batedeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Liquidificador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Máquina de lavar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Secadora", imagem: "https://via.placeholder.com/150" },
+                { nome: "Aspirador de pó", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panela elétrica", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cafeteira", imagem: "https://via.placeholder.com/150" },
+                // Continue adicionando mais presentes até atingir 80
+            ];
+
+            for (let i = 1; i <= 80; i++) {
+                const presente = presentes[i % presentes.length]; // Cicla pelos presentes
+                const div = document.createElement("div");
+                div.classList.add("present");
+                div.id = "present" + i;
+
+                const span = document.createElement("span");
+                span.textContent = presente.nome + " " + i;
+
+                const img = document.createElement("img");
+                img.src = presente.imagem;
+                img.alt = presente.nome;
+
+                div.appendChild(span);
+                div.appendChild(img);
+
+                div.onclick = function() { choosePresent(i); };
+
+                container.appendChild(div);
+            }
+        }
+
+        function choosePresent(presentId) {
+            if (chosenPresents.includes(presentId)) {
+                alert("Este presente já foi escolhido!");
+                return;
+            }
+
+            selectedPresent = presentId;
+            document.getElementById("popup").style.display = "flex";
+        }
+
+        document.getElementById("confirm-btn").onclick = function() {
+            chosenPresents.push(selectedPresent);
+            document.getElementById("present" + selectedPresent).classList.add('chosen');
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("nome-section").style.display = "block";
+            resetNameField();
+        };
+
+        document.getElementById("cancel-btn").onclick = function() {
+            document.getElementById("popup").style.display = "none";
+        };
+
+        function submitName() {
+            const nome = document.getElementById("nome-input").value;
+            if (nome.trim() !== "") {
+                alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                document.getElementById("nome-input").disabled = true;
+                document.getElementById("submit-btn").disabled = true;
+                document.getElementById("nome-section").style.display = "none";
+            } else {
+                alert("Por favor, insira seu nome.");
+            }
+        }
+
+        function resetNameField() {
+            document.getElementById("nome-input").disabled = false;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("nome-input").value = "";
+            document.getElementById("nome-section").style.display = "block";
+        }
+
+        generatePresents();
+    </script>
+</body>
+</html>
