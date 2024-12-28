@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presentes - Casamento</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2C6B3F; /* Verde escuro */
+            color: white;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .present-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .present {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #3E8E41; /* Verde mais claro */
+            border: 2px solid #2A4D2F; /* Tom mais escuro */
+            border-radius: 8px;
+            padding: 10px;
+            width: 150px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .present img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .present:hover {
+            background-color: #2A4D2F;
+            transform: scale(1.05);
+        }
+
+        .chosen {
+            background-color: #98e098; /* Cor verde claro para marcados */
+            border-color: #66c766;
+            pointer-events: none;
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-box {
+            background: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .popup button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .popup button:hover {
+            background-color: #218838;
+        }
+
+        .popup button.cancel {
+            background-color: #dc3545;
+        }
+
+        .popup button.cancel:hover {
+            background-color: #c82333;
+        }
+
+        #nome-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 80%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button#submit-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button#submit-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lista de Presentes - Casamento</h1>
+    <p>Escolha o presente que deseja dar aos noivos. Por favor, insira seu nome após a escolha.</p>
+
+    <div class="present-container" id="present-container"></div>
+
+    <div class="popup" id="popup">
+        <div class="popup-box">
+            <p>Você realmente deseja escolher este presente?</p>
+            <button id="confirm-btn">Sim</button>
+            <button class="cancel" id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="nome-section">
+        <input type="text" id="nome-input" placeholder="Digite seu nome" />
+        <button id="submit-btn" onclick="submitName()">Confirmar Escolha</button>
+    </div>
+
+    <!-- Adicionando a biblioteca do EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        emailjs.init("1slFT3FITOPbfxcxw"); // Usando o seu User ID do EmailJS
+
+        const apiKey = "AIzaSyBJ8Ms7msUrMZerZokx7XsyNyeFkFUl9Is"; // Sua chave de API
+        const spreadsheetId = "1J7zta8qKVz4FRMCAOOmj-DtE-adP6JW5t23MqU_zxSE"; // ID da sua planilha
+
+        let chosenPresents = [];
+        let selectedPresent = null;
+
+        function generatePresents() {
+            const container = document.getElementById("present-container");
+            const presentes = [
+                { nome: "Geladeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Fogão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Microondas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Máquina de Lavar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Torradeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Batedeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Liquidificador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cafeteira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ar Condicionado", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ventilador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Espelho de Parede", imagem: "https://via.placeholder.com/150" },
+                { nome: "Quadro Decorativo", imagem: "https://via.placeholder.com/150" },
+                { nome: "Roupas de Cama", imagem: "https://via.placeholder.com/150" },
+                { nome: "Toalhas de Banho", imagem: "https://via.placeholder.com/150" },
+                { nome: "Travesseiro", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cozinha Completa", imagem: "https://via.placeholder.com/150" },
+                { nome: "Jogo de Pratos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Jogo de Copos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Talheres", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panelas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cesta de Piquenique", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cesta de Café da Manhã", imagem: "https://via.placeholder.com/150" },
+                { nome: "Vaso Decorativo", imagem: "https://via.placeholder.com/150" },
+                { nome: "Kit de Velas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Jogo de Chaves", imagem: "https://via.placeholder.com/150" },
+                { nome: "Kit de Ferramentas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Móveis para Sala", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cadeiras", imagem: "https://via.placeholder.com/150" },
+                { nome: "Mesas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Sofá", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cama", imagem: "https://via.placeholder.com/150" },
+                { nome: "Criado-Mudo", imagem: "https://via.placeholder.com/150" },
+                // Adicione mais presentes aqui se necessário...
+            ];
+
+            for (let i = 0; i < presentes.length; i++) {
+                const presente = presentes[i]; 
+                const div = document.createElement("div");
+                div.classList.add("present");
+                div.id = "present" + (i + 1);
+
+                const span = document.createElement("span");
+                span.textContent = presente.nome;
+
+                const img = document.createElement("img");
+                img.src = presente.imagem;
+                img.alt = presente.nome;
+
+                div.appendChild(span);
+                div.appendChild(img);
+
+                div.onclick = function() { choosePresent(i + 1); };
+
+                container.appendChild(div);
+            }
+        }
+
+        function choosePresent(presentId) {
+            if (chosenPresents.includes(presentId)) {
+                alert("Este presente já foi escolhido!");
+                return;
+            }
+
+            selectedPresent = presentId;
+            document.getElementById("popup").style.display = "flex";
+        }
+
+        document.getElementById("confirm-btn").onclick = function() {
+            chosenPresents.push(selectedPresent);
+            document.getElementById("present" + selectedPresent).classList.add('chosen');
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("nome-section").style.display = "block";
+            resetNameField();
+        };
+
+        document.getElementById("cancel-btn").onclick = function() {
+            document.getElementById("popup").style.display = "none";
+        };
+
+        function submitName() {
+            const nome = document.getElementById("nome-input").value;
+            const presente = document.getElementById("present" + selectedPresent).querySelector("span").textContent;
+
+            if (nome.trim() !== "") {
+                // Enviar o e-mail com EmailJS
+                const templateParams = {
+                    to_name: nome, // Nome do convidado
+                    message: presente // Presente escolhido
+                };
+
+                emailjs.send("jvrsoaress", "jvrsoaresss", templateParams).then(
+                    function() {
+                        alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                        updateSheet(nome, presente); // Enviar dados para a planilha
+                    },
+                    function(error) {
+                        alert("Erro ao enviar e-mail: " + JSON.stringify(error));
+                    }
+                );
+
+                // Bloquear o botão de nome
+                document.getElementById("nome-input").disabled = true;
+                document.getElementById("submit-btn").disabled = true;
+                document.getElementById("nome-section").style.display = "none";
+            } else {
+                alert("Por favor, insira seu nome.");
+            }
+        }
+
+        function resetNameField() {
+            document.getElementById("nome-input").disabled = false;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("nome-input").value = "";
+            document.getElementById("nome-section").style.display = "block";
+        }
+
+        function updateSheet(nome, presente) {
+            const range = "Presentes!A:B"; // Referência correta para a aba 'Presentes'
+            const values = [
+                [presente, nome] // Coluna A: Presente, Coluna B: Nome
+            ];
+
+            const body = {
+                values: values
+            };
+
+            const requestOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    range: range,
+                    valueInputOption: "RAW",
+                    resource: body
+                })
+            };
+
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?key=${apiKey}`, requestOptions)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Dados atualizados com sucesso:", data);
+                })
+                .catch(error => {
+                    console.error("Erro ao atualizar a planilha:", error);
+                });
+        }
+
+        generatePresents();
+    </script>
+</body>
+</html>
