@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presentes - Casamento</title>
+    <style>
+        /* O estilo permanece o mesmo */
+    </style>
+</head>
+<body>
+    <h1>Lista de Presentes - Casamento</h1>
+    <p>Escolha o presente que deseja dar aos noivos. Por favor, insira seu nome após a escolha.</p>
+
+    <div class="present-container" id="present-container"></div>
+
+    <div class="popup" id="popup">
+        <div class="popup-box">
+            <p>Você realmente deseja escolher este presente?</p>
+            <button id="confirm-btn">Sim</button>
+            <button class="cancel" id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="nome-section">
+        <input type="text" id="nome-input" placeholder="Digite seu nome" />
+        <button id="submit-btn" onclick="submitName()">Confirmar Escolha</button>
+    </div>
+
+    <!-- Bibliotecas do Firebase e EmailJS -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script>
+        emailjs.init("1slFT3FITOPbfxcxw"); // Usando o seu User ID do EmailJS
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAcLcTEC9VtPOLhIP2XdU5evLjd2HfGuns",
+            authDomain: "lista-de-presentes-8e1ff.firebaseapp.com",
+            projectId: "lista-de-presentes-8e1ff",
+            storageBucket: "lista-de-presentes-8e1ff.firebasestorage.app",
+            messagingSenderId: "570500676638",
+            appId: "1:570500676638:web:89b366452d4c737c9f020f",
+            measurementId: "G-4ES5F09J9E"
+        };
+        
+        // Inicializando Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(app);
+
+        let chosenPresents = [];
+        let selectedPresent = null;
+
+        // Função para recuperar presentes já escolhidos do Firebase
+        function loadChosenPresents() {
+            const dbRef = database.ref('chosenPresents');
+            dbRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    chosenPresents = Object.values(data);
+                    updatePresentStatus();
+                }
+            });
+        }
+
+        // Função para atualizar o estado dos presentes no frontend
+        function updatePresentStatus() {
+            chosenPresents.forEach((presentId) => {
+                document.getElementById("present" + presentId).classList.add('chosen');
+            });
+        }
+
+        // Gerar os presentes no HTML
+        function generatePresents() {
+            const container = document.getElementById("present-container");
+            const presentes = [
+                { nome: "Geladeira", imagem: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRCFELC6hIq5961VM2CavoPzug_7Pb_Alqkp2Xkkr10yT31WDyyynhJllmjhywa6bHAR3_WcormH-wjgUaQY5RZV3w-zyhutBZ5ms-uGQ-QoLK9U2Xhsx_2piv7PwYDNsGBp4rsw5P5&usqp=CAc" },
+                { nome: "Fogão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Televisão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Micro-ondas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Batedeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Liquidificador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Máquina de lavar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Secadora", imagem: "https://via.placeholder.com/150" },
+                { nome: "Aspirador de pó", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panela elétrica", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cafeteira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Churrasqueira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Frigideira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Torradeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cozinha", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panelas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Jogo de pratos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Talheres", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cadeiras", imagem: "https://via.placeholder.com/150" },
+                { nome: "Sofá", imagem: "https://via.placeholder.com/150" },
+                { nome: "Mesa de jantar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Roupas de cama", imagem: "https://via.placeholder.com/150" },
+                { nome: "Roupeiro", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cortinas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Quadros decorativos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Luminária", imagem: "https://via.placeholder.com/150" },
+                { nome: "Espelho", imagem: "https://via.placeholder.com/150" },
+                { nome: "Abajur", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ventilador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ar condicionado", imagem: "https://via.placeholder.com/150" }
+            ];
+
+            for (let i = 0; i < 30; i++) {
+                const presente = presentes[i];
+                const div = document.createElement("div");
+                div.classList.add("present");
+                div.id = "present" + (i + 1);
+
+                const span = document.createElement("span");
+                span.textContent = presente.nome;
+
+                const img = document.createElement("img");
+                img.src = presente.imagem;
+                img.alt = presente.nome;
+
+                div.appendChild(span);
+                div.appendChild(img);
+
+                div.onclick = function() { choosePresent(i + 1); };
+
+                container.appendChild(div);
+            }
+        }
+
+        function choosePresent(presentId) {
+            if (chosenPresents.includes(presentId)) {
+                alert("Este presente já foi escolhido!");
+                return;
+            }
+
+            selectedPresent = presentId;
+            document.getElementById("popup").style.display = "flex";
+        }
+
+        document.getElementById("confirm-btn").onclick = function() {
+            chosenPresents.push(selectedPresent);
+            document.getElementById("present" + selectedPresent).classList.add('chosen');
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("nome-section").style.display = "block";
+            resetNameField();
+            savePresentToFirebase(selectedPresent);
+        };
+
+        document.getElementById("cancel-btn").onclick = function() {
+            document.getElementById("popup").style.display = "none";
+        };
+
+        function submitName() {
+            const nome = document.getElementById("nome-input").value;
+            const presente = document.getElementById("present" + selectedPresent).querySelector("span").textContent;
+
+            if (nome.trim() !== "") {
+                // Enviar o e-mail com EmailJS
+                const templateParams = {
+                    to_name: nome,
+                    message: presente
+                };
+
+                emailjs.send("jvrsoaress", "jvrsoaresss", templateParams).then(
+                    function() {
+                        alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                    },
+                    function(error) {
+                        alert("Erro ao enviar e-mail: " + JSON.stringify(error));
+                    }
+                );
+
+                // Bloquear o botão de nome
+                document.getElementById("nome-input").disabled = true;
+                document.getElementById("submit-btn").disabled = true;
+                document.getElementById("nome-section").style.display = "none";
+            } else {
+                alert("Por favor, insira seu nome.");
+            }
+        }
+
+        function resetNameField() {
+            document.getElementById("nome-input").disabled = false;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("nome-input").value = "";
+            document.getElementById("nome-section").style.display = "block";
+        }
+
+        function savePresentToFirebase(presentId) {
+            const dbRef = database.ref('chosenPresents');
+            dbRef.push(presentId);
+        }
+
+        // Carregar os presentes já escolhidos do Firebase
+        loadChosenPresents();
+        generatePresents();
+    </script>
+</body>
+</html>
