@@ -153,7 +153,11 @@
         <button id="submit-btn" onclick="submitName()">Confirmar Escolha</button>
     </div>
 
+    <!-- Adicionando a biblioteca do EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
+        emailjs.init("1slFT3FITOPbfxcxw"); // Usando o seu User ID do EmailJS
+
         let chosenPresents = [];
         let selectedPresent = null;
 
@@ -171,7 +175,6 @@
                 { nome: "Aspirador de pó", imagem: "https://via.placeholder.com/150" },
                 { nome: "Panela elétrica", imagem: "https://via.placeholder.com/150" },
                 { nome: "Cafeteira", imagem: "https://via.placeholder.com/150" },
-                { nome: "Micro-ondas", imagem: "https://via.placeholder.com/150" },
                 { nome: "Churrasqueira", imagem: "https://via.placeholder.com/150" },
                 { nome: "Frigideira", imagem: "https://via.placeholder.com/150" },
                 { nome: "Torradeira", imagem: "https://via.placeholder.com/150" },
@@ -200,7 +203,7 @@
                 div.id = "present" + (i + 1);
 
                 const span = document.createElement("span");
-                span.textContent = presente.nome;  // Removendo o número após o nome
+                span.textContent = presente.nome;
 
                 const img = document.createElement("img");
                 img.src = presente.imagem;
@@ -239,8 +242,25 @@
 
         function submitName() {
             const nome = document.getElementById("nome-input").value;
+            const presente = document.getElementById("present" + selectedPresent).querySelector("span").textContent;
+
             if (nome.trim() !== "") {
-                alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                // Enviar o e-mail com EmailJS
+                const templateParams = {
+                    to_name: nome, // Nome do convidado
+                    message: presente // Presente escolhido
+                };
+
+                emailjs.send("jvrsoaress", "jvrsoaresss", templateParams).then(
+                    function() {
+                        alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                    },
+                    function(error) {
+                        alert("Erro ao enviar e-mail: " + JSON.stringify(error));
+                    }
+                );
+
+                // Bloquear o botão de nome
                 document.getElementById("nome-input").disabled = true;
                 document.getElementById("submit-btn").disabled = true;
                 document.getElementById("nome-section").style.display = "none";
