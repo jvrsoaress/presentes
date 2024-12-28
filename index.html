@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presentes - Casamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0a3d23;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        .present-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+        }
+        .present {
+            background-color: #fff;
+            padding: 15px;
+            width: 150px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .present img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        .present:hover {
+            background-color: #ddd;
+        }
+        .chosen {
+            background-color: #5a9a3a;
+            color: #fff;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .popup-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 300px;
+            width: 100%;
+        }
+        .popup-box button {
+            margin: 10px;
+            padding: 10px;
+            background-color: #0a3d23;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .popup-box button.cancel {
+            background-color: #d9534f;
+        }
+        #nome-section {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #nome-input {
+            padding: 10px;
+            font-size: 1.2em;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        #submit-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #0a3d23;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lista de Presentes - Casamento</h1>
+        <p>Escolha o presente que deseja dar aos noivos. Por favor, insira seu nome após a escolha.</p>
+    </header>
+
+    <div class="present-container" id="present-container"></div>
+
+    <div class="popup" id="popup">
+        <div class="popup-box">
+            <p>Você realmente deseja escolher este presente?</p>
+            <button id="confirm-btn">Sim</button>
+            <button class="cancel" id="cancel-btn">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="nome-section">
+        <input type="text" id="nome-input" placeholder="Digite seu nome" />
+        <button id="submit-btn" onclick="submitName()">Confirmar Escolha</button>
+    </div>
+
+    <!-- EmailJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        emailjs.init("1slFT3FITOPbfxcxw"); // Chave de usuário do EmailJS
+
+        const spreadsheetId = '1J7zta8qKVz4FRMCAOOmj-DtE-adP6JW5t23MqU_zxSE'; // ID da planilha
+        const apiKey = 'AIzaSyBJ8Ms7msUrMZerZokx7XsyNyeFkFUl9Is'; // Chave da API do Google Sheets
+        let chosenPresents = [];
+        let selectedPresent = null;
+
+        function generatePresents() {
+            const container = document.getElementById("present-container");
+            const presentes = [
+                { nome: "Geladeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Fogão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Televisão", imagem: "https://via.placeholder.com/150" },
+                { nome: "Micro-ondas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Batedeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Liquidificador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Máquina de lavar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Secadora", imagem: "https://via.placeholder.com/150" },
+                { nome: "Aspirador de pó", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panela elétrica", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cafeteira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Churrasqueira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Frigideira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Torradeira", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cozinha", imagem: "https://via.placeholder.com/150" },
+                { nome: "Panelas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Jogo de pratos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Talheres", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cadeiras", imagem: "https://via.placeholder.com/150" },
+                { nome: "Sofá", imagem: "https://via.placeholder.com/150" },
+                { nome: "Mesa de jantar", imagem: "https://via.placeholder.com/150" },
+                { nome: "Roupas de cama", imagem: "https://via.placeholder.com/150" },
+                { nome: "Roupeiro", imagem: "https://via.placeholder.com/150" },
+                { nome: "Cortinas", imagem: "https://via.placeholder.com/150" },
+                { nome: "Quadros decorativos", imagem: "https://via.placeholder.com/150" },
+                { nome: "Luminária", imagem: "https://via.placeholder.com/150" },
+                { nome: "Espelho", imagem: "https://via.placeholder.com/150" },
+                { nome: "Abajur", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ventilador", imagem: "https://via.placeholder.com/150" },
+                { nome: "Ar condicionado", imagem: "https://via.placeholder.com/150" }
+            ];
+
+            for (let i = 0; i < presentes.length; i++) {  // Gerar todos os presentes
+                const presente = presentes[i];
+                const div = document.createElement("div");
+                div.classList.add("present");
+                div.id = "present" + (i + 1);
+
+                const span = document.createElement("span");
+                span.textContent = presente.nome;
+
+                const img = document.createElement("img");
+                img.src = presente.imagem;
+                img.alt = presente.nome;
+
+                div.appendChild(span);
+                div.appendChild(img);
+
+                div.onclick = function() { choosePresent(i + 1); };
+
+                container.appendChild(div);
+            }
+        }
+
+        function choosePresent(presentId) {
+            if (chosenPresents.includes(presentId)) {
+                alert("Este presente já foi escolhido!");
+                return;
+            }
+
+            selectedPresent = presentId;
+            document.getElementById("popup").style.display = "flex";
+        }
+
+        document.getElementById("confirm-btn").onclick = function() {
+            chosenPresents.push(selectedPresent);
+            document.getElementById("present" + selectedPresent).classList.add('chosen');
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("nome-section").style.display = "block";
+            resetNameField();
+        };
+
+        document.getElementById("cancel-btn").onclick = function() {
+            document.getElementById("popup").style.display = "none";
+        };
+
+        function submitName() {
+            const nome = document.getElementById("nome-input").value;
+            const presente = document.getElementById("present" + selectedPresent).querySelector("span").textContent;
+
+            if (nome.trim() !== "") {
+                // Enviar o e-mail com EmailJS
+                const templateParams = {
+                    to_name: nome, // Nome do convidado
+                    message: presente // Presente escolhido
+                };
+
+                emailjs.send("jvrsoaress", "jvrsoaresss", templateParams).then(
+                    function() {
+                        alert("Obrigado, " + nome + "! Seu presente foi confirmado.");
+                    },
+                    function(error) {
+                        alert("Erro ao enviar e-mail: " + JSON.stringify(error));
+                    }
+                );
+
+                // Atualizar a planilha com o nome e presente escolhido
+                updateSheet(nome, presente);
+
+                // Bloquear o botão de nome
+                document.getElementById("nome-input").disabled = true;
+                document.getElementById("submit-btn").disabled = true;
+                document.getElementById("nome-section").style.display = "none";
+            } else {
+                alert("Por favor, insira seu nome.");
+            }
+        }
+
+        function updateSheet(nome, presente) {
+            const range = `A:B`; // Definindo o intervalo de células (coluna A para presente e coluna B para nome)
+
+            // Definir o valor a ser atualizado na planilha
+            const values = [
+                [presente, nome] // O nome do presente e o nome do convidado
+            ];
+
+            const body = {
+                values: values
+            };
+
+            const requestOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    spreadsheetId: spreadsheetId,
+                    range: range,
+                    valueInputOption: 'RAW',
+                    resource: body
+                })
+            };
+
+            fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&key=${apiKey}`, requestOptions)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Dados atualizados com sucesso:', data);
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar a planilha:', error);
+                });
+        }
+
+        function resetNameField() {
+            document.getElementById("nome-input").disabled = false;
+            document.getElementById("submit-btn").disabled = false;
+            document.getElementById("nome-input").value = "";
+            document.getElementById("nome-section").style.display = "block";
+        }
+
+        generatePresents(); // Chama a função para gerar os presentes ao carregar a página
+    </script>
+</body>
+</html>
